@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singleton Outcomes Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+  <style>
+    :root {
+      --bg-0: #07111a;
+      --bg-1: #0f2434;
+      --panel: rgba(10, 22, 34, 0.78);
+      --line: rgba(150, 214, 255, 0.22);
+      --text: #edf7ff;
+      --muted: #a4c7e3;
+      --accent: #5dd4ff;
+      --accent-2: #ffd77a;
+      --ok: #33dd98;
+      --fail: #ff7f95;
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.34);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--text);
+      background: radial-gradient(circle at 12% 10%, #1a3348 0%, var(--bg-0) 56%);
+      font-family: "Sora", "Segoe UI", sans-serif;
+    }
+
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.55; }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, 92vw);
+      margin: 0 auto;
+      padding: 26px 0 52px;
+    }
+
+    .hero, .panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(12, 27, 40, 0.9), rgba(8, 16, 26, 0.9));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(7px);
+    }
+
+    .hero { padding: 24px; }
+    .hero h1 { margin: 0; font-size: clamp(1.4rem, 2.9vw, 2.2rem); }
+    .hero p { margin: 10px 0 0; color: var(--muted); line-height: 1.6; }
+
+    .badges { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .badge {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      color: #d9efff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .layout {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .panel { grid-column: span 12; padding: 16px; }
+    .panel h2 { margin: 0; color: var(--accent); font-size: 1.08rem; }
+    .sub { margin: 8px 0 0; color: var(--muted); line-height: 1.5; }
+
+    .inputs {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+    }
+
+    .input-box {
+      grid-column: span 12;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px;
+    }
+
+    .input-box label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      color: #dff0ff;
+      padding: 10px;
+      font: 0.82rem/1.45 "JetBrains Mono", monospace;
+    }
+
+    .buttons {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: linear-gradient(130deg, rgba(93, 212, 255, 0.2), rgba(255, 215, 122, 0.14));
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn:hover { border-color: rgba(93, 212, 255, 0.7); transform: translateY(-1px); }
+    .btn.active { border-color: rgba(93, 212, 255, 1); box-shadow: inset 0 0 0 1px rgba(93, 212, 255, 0.35); }
+    .btn.secondary { background: rgba(255, 255, 255, 0.07); }
+
+    .kpis {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .kpi {
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px;
+    }
+
+    .kpi .label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    .kpi .value { margin-top: 5px; font-weight: 700; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 72px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .ok { color: var(--ok); border-color: rgba(51, 221, 152, 0.5); background: rgba(51, 221, 152, 0.12); }
+    .fail { color: var(--fail); border-color: rgba(255, 127, 149, 0.5); background: rgba(255, 127, 149, 0.12); }
+
+    .track { margin-top: 10px; height: 9px; border-radius: 999px; overflow: hidden; background: rgba(255, 255, 255, 0.08); }
+    .fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.12s linear; }
+
+    .log {
+      margin-top: 10px;
+      max-height: 130px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      font: 0.84rem/1.45 "JetBrains Mono", monospace;
+      color: #d5ecff;
+    }
+
+    .detail {
+      margin-top: 10px;
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #d3eaff;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 9px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+    }
+
+    th { color: #d8efff; }
+    td { color: #d9edff; }
+
+    @media (min-width: 960px) {
+      .half { grid-column: span 6; }
+      .input-box { grid-column: span 4; }
+    }
+  </style>
+</head>
+<body>
+  <div id="bg-canvas"></div>
+
+  <main class="app">
+    <section class="hero">
+      <h1>Singleton Outcomes Dashboard</h1>
+      <p>Professional, data-driven view. Outcomes load automatically and update instantly when you click a control or replay button.</p>
+      <div class="badges" id="hero-badges"></div>
+    </section>
+
+    <section class="layout">
+      <article class="panel">
+        <h2>Controls</h2>
+        <p class="sub">Use the buttons to refresh data, validate patterns, and replay outcomes.</p>
+
+        <div class="buttons">
+          <button class="btn" id="refresh-btn">Refresh Data</button>
+          <button class="btn" id="run-test-btn">Run Test</button>
+          <button class="btn" id="pattern-check-btn">Pattern Check</button>
+          <button class="btn" id="experiment-btn">Experiment</button>
+          <button class="btn secondary" id="clear-btn">Clear</button>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Live Pattern Replay</h2>
+        <p class="sub">Run one pattern or all patterns after parsing data.</p>
+        <div class="buttons" id="pattern-buttons">
+          <button class="btn" data-pattern="Eager">Test Eager</button>
+          <button class="btn" data-pattern="Lazy">Test Lazy</button>
+          <button class="btn" data-pattern="Synchronized">Test Synchronized</button>
+          <button class="btn" data-pattern="DoubleChecked">Test DoubleChecked</button>
+          <button class="btn" data-pattern="BillPugh">Test BillPugh</button>
+          <button class="btn" data-pattern="Enum">Test Enum</button>
+          <button id="run-all" class="btn secondary">Run All</button>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="label">Pattern</div><div class="value" id="live-pattern">-</div></div>
+          <div class="kpi"><div class="label">Thread Result</div><div class="value"><span id="live-status" class="status">Waiting</span></div></div>
+          <div class="kpi"><div class="label">Threads</div><div class="value" id="live-threads">0</div></div>
+          <div class="kpi"><div class="label">Unique Objects</div><div class="value" id="live-objects">0</div></div>
+          <div class="kpi"><div class="label">Unique Clients</div><div class="value" id="live-clients">0</div></div>
+          <div class="kpi"><div class="label">Init Time (s)</div><div class="value" id="live-init">0.00000000</div></div>
+          <div class="kpi"><div class="label">Avg Access (us)</div><div class="value" id="live-avg">0.0000</div></div>
+        </div>
+
+        <div class="track"><div class="fill" id="live-progress"></div></div>
+        <div class="log" id="live-log">Data loads automatically. Click a replay button to see live output.</div>
+        <div class="detail" id="pattern-detail">No pattern selected.</div>
+      </article>
+
+      <article class="panel half">
+        <h2>Thread Safety Results</h2>
+        <table>
+          <thead>
+            <tr><th>Pattern</th><th>Unique objects</th><th>Unique clients</th><th>Result</th></tr>
+          </thead>
+          <tbody id="thread-table">
+            <tr><td colspan="4">No parsed data yet.</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <article class="panel half">
+        <h2>Performance League</h2>
+        <table>
+          <thead>
+            <tr><th>Rank</th><th>Pattern</th><th>Init (s)</th><th>Avg access (us)</th></tr>
+          </thead>
+          <tbody id="perf-table">
+            <tr><td colspan="4">No parsed data yet.</td></tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const ui = (id) => document.getElementById(id);
+    const stars = [];
+    const nodes = [];
+    let activeRunner = null;
+    let parsedData = {};
+    const outputs = {
+      instance: "",
+      thread: "",
+      perf: "",
+      updatedAt: null,
+    };
+
+    const seedOutputs = {
+      updatedAt: "22 April 2026",
+      instance: `Eager: object_id_1=4402143856, object_id_2=4402143856, same_instance=True, same_client=True
+Lazy: object_id_1=4406698608, object_id_2=4406698608, same_instance=True, same_client=True
+Synchronized: object_id_1=4406698944, object_id_2=4406698944, same_instance=True, same_client=True
+DoubleChecked: object_id_1=4406700624, object_id_2=4406700624, same_instance=True, same_client=True
+BillPugh: object_id_1=4402149568, object_id_2=4402149568, same_instance=True, same_client=True
+Enum: object_id_1=4406697936, object_id_2=4406697936, same_instance=True, same_client=True`,
+      thread: `Eager: unique_objects=1, unique_clients=1
+Lazy: unique_objects=20, unique_clients=20
+Synchronized: unique_objects=1, unique_clients=1
+DoubleChecked: unique_objects=1, unique_clients=1
+BillPugh: unique_objects=1, unique_clients=1
+Enum: unique_objects=1, unique_clients=1`,
+      perf: `Eager: first_access=0.00000000s, avg_access=0.0198us
+Lazy: first_access=0.06866884s, avg_access=0.1395us
+Synchronized: first_access=0.04609585s, avg_access=0.1591us
+DoubleChecked: first_access=0.04338217s, avg_access=0.0759us
+BillPugh: first_access=0.04553294s, avg_access=0.0430us
+Enum: first_access=0.00000286s, avg_access=0.0834us`,
+    };
+
+    function stamp() {
+      return new Date().toLocaleTimeString();
+    }
+
+    function log(message) {
+      ui("live-log").textContent = `[${stamp()}] ${message}\n` + ui("live-log").textContent;
+    }
+
+    function applySeedOutputs() {
+      outputs.instance = seedOutputs.instance;
+      outputs.thread = seedOutputs.thread;
+      outputs.perf = seedOutputs.perf;
+      outputs.updatedAt = seedOutputs.updatedAt;
+      log(`Data refreshed (seed) • ${outputs.updatedAt}`);
+    }
+
+    async function refreshData() {
+      parsedData = {};
+      try {
+        const res = await fetch("./results.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const norm = (v) => Array.isArray(v) ? v.join("\n") : String(v ?? "");
+        outputs.instance = norm(data.instance);
+        outputs.thread = norm(data.thread);
+        outputs.perf = norm(data.perf);
+        outputs.updatedAt = data.updatedAt ? String(data.updatedAt) : null;
+        log(`Data refreshed (results.json)${outputs.updatedAt ? ` • ${outputs.updatedAt}` : ""}`);
+      } catch (e) {
+        applySeedOutputs();
+      }
+
+      const countBefore = Object.keys(parsedData).length;
+      ensureParsedData();
+      const countAfter = Object.keys(parsedData).length;
+      if (countAfter > 0 && countBefore === 0) log(`Parsed outcomes for ${countAfter} pattern(s).`);
+    }
+
+    function setStatus(pass) {
+      const el = ui("live-status");
+      if (pass === null) {
+        el.textContent = "N/A";
+        el.className = "status";
+        return;
+      }
+      el.className = `status ${pass ? "ok" : "fail"}`;
+      el.textContent = pass ? "PASS" : "FAIL";
+    }
+
+    function setActiveBtn(name) {
+      document.querySelectorAll("#pattern-buttons .btn[data-pattern]").forEach((b) => b.classList.toggle("active", b.dataset.pattern === name));
+    }
+
+    function ensureParsedData() {
+      if (Object.keys(parsedData).length > 0) return true;
+      if (!outputs.instance && !outputs.thread && !outputs.perf) applySeedOutputs();
+
+      const fresh = buildMergedData();
+      const count = Object.keys(fresh).length;
+      if (count === 0) {
+        log("No valid lines parsed.");
+        return false;
+      }
+
+      parsedData = fresh;
+      updateHero(parsedData);
+      updateTables(parsedData);
+      return true;
+    }
+
+    function parseInstance(text) {
+      const rows = {};
+      const re = /^([A-Za-z]+):\s*object_id_1=(\d+),\s*object_id_2=(\d+),\s*same_instance=(True|False),\s*same_client=(True|False)$/gm;
+      let m = null;
+      while ((m = re.exec(text)) !== null) {
+        rows[m[1]] = {
+          sameInstance: m[4] === "True",
+          sameClient: m[5] === "True",
+        };
+      }
+      return rows;
+    }
+
+    function parseThread(text) {
+      const rows = {};
+      const re = /^([A-Za-z]+):\s*unique_objects=(\d+),\s*unique_clients=(\d+)$/gm;
+      let m = null;
+      while ((m = re.exec(text)) !== null) {
+        rows[m[1]] = {
+          uniqueObjects: Number(m[2]),
+          uniqueClients: Number(m[3]),
+          threads: 20,
+        };
+      }
+      return rows;
+    }
+
+    function parsePerf(text) {
+      const rows = {};
+      const re = /^([A-Za-z]+):\s*first_access=([0-9.]+)s,\s*avg_access=([0-9.]+)us$/gm;
+      let m = null;
+      while ((m = re.exec(text)) !== null) {
+        rows[m[1]] = {
+          initSeconds: Number(m[2]),
+          avgUs: Number(m[3]),
+        };
+      }
+      return rows;
+    }
+
+    function buildMergedData() {
+      const instanceRows = parseInstance(outputs.instance);
+      const threadRows = parseThread(outputs.thread);
+      const perfRows = parsePerf(outputs.perf);
+
+      const keys = new Set([...Object.keys(instanceRows), ...Object.keys(threadRows), ...Object.keys(perfRows)]);
+      const merged = {};
+
+      keys.forEach((key) => {
+        const thread = threadRows[key] || {};
+        const perf = perfRows[key] || {};
+        const instance = instanceRows[key] || {};
+
+        const uniqueObjects = thread.uniqueObjects ?? 0;
+        const uniqueClients = thread.uniqueClients ?? 0;
+
+        merged[key] = {
+          threads: thread.threads ?? 0,
+          uniqueObjects,
+          uniqueClients,
+          pass: uniqueObjects === 1 && uniqueClients === 1,
+          initSeconds: perf.initSeconds ?? 0,
+          avgUs: perf.avgUs ?? 0,
+          sameInstance: instance.sameInstance ?? false,
+          sameClient: instance.sameClient ?? false,
+        };
+      });
+
+      return merged;
+    }
+
+    function updateHero(data) {
+      const names = Object.keys(data);
+      if (names.length === 0) {
+        ui("hero-badges").innerHTML = "<span class='badge'>No outcomes loaded</span>";
+        return;
+      }
+
+      const ranked = names.slice().sort((a, b) => data[a].avgUs - data[b].avgUs);
+      const fastest = ranked[0];
+      const safeCount = names.filter((n) => data[n].pass).length;
+
+      ui("hero-badges").innerHTML = [
+        `<span class='badge'>Patterns loaded: ${names.length}</span>`,
+        `<span class='badge'>Fastest avg access: ${fastest} (${data[fastest].avgUs.toFixed(4)} us)</span>`,
+        `<span class='badge'>Thread-safe in test: ${safeCount} / ${names.length}</span>`,
+        outputs.updatedAt ? `<span class='badge'>Updated: ${outputs.updatedAt}</span>` : "",
+      ].join("");
+    }
+
+    function updateTables(data) {
+      const names = Object.keys(data);
+      if (names.length === 0) {
+        ui("thread-table").innerHTML = "<tr><td colspan='4'>No parsed data yet.</td></tr>";
+        ui("perf-table").innerHTML = "<tr><td colspan='4'>No parsed data yet.</td></tr>";
+        return;
+      }
+
+      ui("thread-table").innerHTML = names.map((n) => {
+        const d = data[n];
+        return `<tr><td>${n}</td><td>${d.uniqueObjects}</td><td>${d.uniqueClients}</td><td><span class='status ${d.pass ? "ok" : "fail"}'>${d.pass ? "Pass" : "Fail"}</span></td></tr>`;
+      }).join("");
+
+      const ranked = names.slice().sort((a, b) => data[a].avgUs - data[b].avgUs);
+      ui("perf-table").innerHTML = ranked.map((n, i) => {
+        const d = data[n];
+        return `<tr><td>#${i + 1}</td><td>${n}</td><td>${d.initSeconds.toFixed(8)}</td><td>${d.avgUs.toFixed(4)}</td></tr>`;
+      }).join("");
+    }
+
+    function explainPattern(name, d) {
+      const safetyLine = d.pass ? "Thread-safe in this experiment." : "Not thread-safe in this experiment.";
+      const instanceLine = d.sameInstance && d.sameClient
+        ? "Instance validation passed: same instance and same client across repeated calls."
+        : "Instance validation is incomplete or failed based on parsed data.";
+
+      ui("pattern-detail").innerHTML = `<strong>${name}</strong><br>${safetyLine}<br>${instanceLine}<br>Init: ${d.initSeconds.toFixed(8)}s | Avg access: ${d.avgUs.toFixed(4)}us`;
+    }
+
+    function runPattern(name, done) {
+      if (!ensureParsedData()) return;
+      const d = parsedData[name];
+      if (!d) return;
+
+      if (activeRunner) {
+        clearInterval(activeRunner);
+        activeRunner = null;
+      }
+
+      setActiveBtn(name);
+      ui("live-pattern").textContent = name;
+      setStatus(d.pass);
+      ui("live-threads").textContent = "0";
+      ui("live-objects").textContent = "0";
+      ui("live-clients").textContent = "0";
+      ui("live-init").textContent = "0.00000000";
+      ui("live-avg").textContent = "0.0000";
+      ui("live-progress").style.width = "0%";
+      explainPattern(name, d);
+      log(`Starting ${name} replay...`);
+
+      const steps = 24;
+      let tick = 0;
+
+      activeRunner = setInterval(() => {
+        tick += 1;
+        const p = tick / steps;
+
+        ui("live-threads").textContent = String(Math.max(1, Math.round(d.threads * p)));
+        ui("live-objects").textContent = String(d.uniqueObjects === 1 ? 1 : Math.max(1, Math.round(d.uniqueObjects * p)));
+        ui("live-clients").textContent = String(d.uniqueClients === 1 ? 1 : Math.max(1, Math.round(d.uniqueClients * p)));
+
+        const initLive = Math.max(0, d.initSeconds * p + (Math.random() - 0.5) * d.initSeconds * 0.05);
+        const avgLive = Math.max(0, d.avgUs * p + (Math.random() - 0.5) * d.avgUs * 0.06);
+        ui("live-init").textContent = initLive.toFixed(8);
+        ui("live-avg").textContent = avgLive.toFixed(4);
+        ui("live-progress").style.width = `${Math.min(100, p * 100)}%`;
+
+        if (tick >= steps) {
+          clearInterval(activeRunner);
+          activeRunner = null;
+
+          ui("live-threads").textContent = String(d.threads);
+          ui("live-objects").textContent = String(d.uniqueObjects);
+          ui("live-clients").textContent = String(d.uniqueClients);
+          ui("live-init").textContent = d.initSeconds.toFixed(8);
+          ui("live-avg").textContent = d.avgUs.toFixed(4);
+          ui("live-progress").style.width = "100%";
+
+          log(`${name} done -> objects=${d.uniqueObjects}, clients=${d.uniqueClients}, avg=${d.avgUs.toFixed(4)}us`);
+          if (done) done();
+        }
+      }, 100);
+    }
+
+    function runAll() {
+      if (!ensureParsedData()) {
+        return;
+      }
+
+      const names = Object.keys(parsedData);
+
+      const runAllBtn = ui("run-all");
+      runAllBtn.disabled = true;
+      runAllBtn.textContent = "Running...";
+      log("Run All started.");
+
+      let i = 0;
+      const next = () => {
+        if (i >= names.length) {
+          runAllBtn.disabled = false;
+          runAllBtn.textContent = "Run All";
+          log("Run All completed.");
+          return;
+        }
+        runPattern(names[i], next);
+        i += 1;
+      };
+
+      next();
+    }
+
+    function runTest() {
+      if (!ensureParsedData()) return;
+      runAll();
+    }
+
+    function runExperiment() {
+      if (!ensureParsedData()) {
+        return;
+      }
+
+      patternCheck();
+      runAll();
+      log("Experiment workflow started (check + replay all).");
+    }
+
+    function patternCheck() {
+      if (!ensureParsedData()) return;
+      const names = Object.keys(parsedData);
+      if (names.length === 0) {
+        log("Pattern check failed: no parsed data.");
+        ui("pattern-detail").textContent = "Pattern check unavailable. Refresh Data first.";
+        return;
+      }
+
+      const passed = names.filter((n) => parsedData[n].pass);
+      const failed = names.filter((n) => !parsedData[n].pass);
+
+      const lines = [];
+      lines.push(`Total patterns: ${names.length}`);
+      lines.push(`Thread-safe: ${passed.length}`);
+      lines.push(`Not thread-safe: ${failed.length}`);
+      if (failed.length > 0) {
+        lines.push(`Failed patterns: ${failed.join(", ")}`);
+      } else {
+        lines.push("Failed patterns: none");
+      }
+
+      ui("pattern-detail").innerHTML = `<strong>Pattern Check Summary</strong><br>${lines.join("<br>")}`;
+      log(`Pattern check completed -> safe=${passed.length}, failed=${failed.length}`);
+    }
+
+    function clearAll() {
+      outputs.instance = "";
+      outputs.thread = "";
+      outputs.perf = "";
+      outputs.updatedAt = null;
+      parsedData = {};
+      updateHero(parsedData);
+      updateTables(parsedData);
+      ui("live-pattern").textContent = "-";
+      setStatus(null);
+      ui("live-threads").textContent = "0";
+      ui("live-objects").textContent = "0";
+      ui("live-clients").textContent = "0";
+      ui("live-init").textContent = "0.00000000";
+      ui("live-avg").textContent = "0.0000";
+      ui("live-progress").style.width = "0%";
+      ui("live-log").textContent = "Data cleared. Click Refresh Data to load outcomes.";
+      ui("pattern-detail").textContent = "No pattern selected.";
+    }
+
+    function bindActions() {
+      ui("refresh-btn").addEventListener("click", refreshData);
+      ui("run-test-btn").addEventListener("click", runTest);
+      ui("pattern-check-btn").addEventListener("click", patternCheck);
+      ui("experiment-btn").addEventListener("click", runExperiment);
+      ui("clear-btn").addEventListener("click", clearAll);
+
+      document.querySelectorAll("#pattern-buttons .btn[data-pattern]").forEach((btn) => {
+        btn.addEventListener("click", () => runPattern(btn.dataset.pattern));
+      });
+
+      ui("run-all").addEventListener("click", runAll);
+    }
+
+    function initDashboard() {
+      updateHero({});
+      updateTables({});
+      bindActions();
+      refreshData();
+    }
+
+    function setup() {
+      const c = createCanvas(windowWidth, windowHeight);
+      c.parent("bg-canvas");
+      noStroke();
+
+      for (let i = 0; i < 120; i++) stars.push({ x: random(width), y: random(height), r: random(1, 2.6), s: random(0.08, 0.38) });
+      for (let i = 0; i < 38; i++) nodes.push({ x: random(width), y: random(height), vx: random(-0.2, 0.2), vy: random(-0.2, 0.2) });
+
+      initDashboard();
+    }
+
+    function draw() {
+      clear();
+
+      for (const s of stars) {
+        fill(138, 212, 255, 120);
+        circle(s.x, s.y, s.r * 2);
+        s.y += s.s;
+        if (s.y > height + 8) { s.y = -8; s.x = random(width); }
+      }
+
+      for (const n of nodes) {
+        n.x += n.vx;
+        n.y += n.vy;
+        if (n.x < 0 || n.x > width) n.vx *= -1;
+        if (n.y < 0 || n.y > height) n.vy *= -1;
+      }
+
+      stroke(93, 212, 255, 52);
+      strokeWeight(1);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const d = dist(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+          if (d < 112) line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+        }
+      }
+
+      noStroke();
+      for (const n of nodes) { fill(255, 215, 122, 170); circle(n.x, n.y, 3); }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  </script>
+</body>
+</html>

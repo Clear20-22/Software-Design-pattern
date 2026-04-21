@@ -1,0 +1,19 @@
+{
+  "clear_first": true,
+  "collections": [
+    {
+      "collection": "singleton_assignment_items",
+      "elapsed_seconds": 0.6172991249995903,
+      "inserted_count": 200
+    },
+    {
+      "collection": "singleton_assignment_events",
+      "elapsed_seconds": 0.6086336249995838,
+      "inserted_count": 200
+    }
+  ],
+  "doc_count_requested_per_collection": 200,
+  "kind": "seed_data",
+  "total_elapsed_seconds": 1.2259327499991741,
+  "total_inserted_count": 400
+}

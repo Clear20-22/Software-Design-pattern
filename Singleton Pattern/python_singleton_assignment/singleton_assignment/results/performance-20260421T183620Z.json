@@ -1,0 +1,47 @@
+{
+  "kind": "performance",
+  "rows": [
+    {
+      "access_iterations": 200000,
+      "access_seconds_per_call": 2.025020500013852e-08,
+      "access_seconds_total": 0.004050041000027704,
+      "implementation": "Eager Initialization",
+      "init_seconds": 4.1600014810683206e-07
+    },
+    {
+      "access_iterations": 200000,
+      "access_seconds_per_call": 1.1948458500000926e-07,
+      "access_seconds_total": 0.02389691700000185,
+      "implementation": "Lazy Initialization (basic)",
+      "init_seconds": 0.05020925000007992
+    },
+    {
+      "access_iterations": 200000,
+      "access_seconds_per_call": 1.407770850005363e-07,
+      "access_seconds_total": 0.028155417000107263,
+      "implementation": "Synchronized Method",
+      "init_seconds": 0.025157583000236627
+    },
+    {
+      "access_iterations": 200000,
+      "access_seconds_per_call": 6.85179150013937e-08,
+      "access_seconds_total": 0.01370358300027874,
+      "implementation": "Double-Checked Locking",
+      "init_seconds": 0.025118958000348357
+    },
+    {
+      "access_iterations": 200000,
+      "access_seconds_per_call": 5.5374579999352135e-08,
+      "access_seconds_total": 0.011074915999870427,
+      "implementation": "Bill Pugh Implementation",
+      "init_seconds": 0.025105959000029543
+    },
+    {
+      "access_iterations": 200000,
+      "access_seconds_per_call": 7.929207999950449e-08,
+      "access_seconds_total": 0.0158584159999009,
+      "implementation": "Enum-based Singleton",
+      "init_seconds": 3.000000106112566e-06
+    }
+  ]
+}

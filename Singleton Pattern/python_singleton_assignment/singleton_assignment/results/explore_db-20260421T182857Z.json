@@ -1,0 +1,32 @@
+{
+  "collection_count": 2,
+  "collections": [
+    {
+      "estimated_count": 200,
+      "name": "singleton_assignment_events",
+      "sample": {
+        "_id": "69e7c17a72088f5d2f44a4f2",
+        "active": false,
+        "category": "delta",
+        "created_at": "2026-04-21T18:27:04.192000",
+        "seq": 1,
+        "value": 7617
+      }
+    },
+    {
+      "estimated_count": 200,
+      "name": "singleton_assignment_items",
+      "sample": {
+        "_id": "69e7c17972088f5d2f44a42a",
+        "active": false,
+        "category": "alpha",
+        "created_at": "2026-04-21T18:27:04.192000",
+        "seq": 1,
+        "value": 410
+      }
+    }
+  ],
+  "database": "CP-Tracker",
+  "elapsed_seconds": 0.736248458999853,
+  "kind": "explore_db"
+}

@@ -1,0 +1,119 @@
+{
+  "kind": "instance_validation",
+  "rows": [
+    {
+      "client_ids": [
+        4474093056,
+        4474093056,
+        4474093056,
+        4474093056,
+        4474093056
+      ],
+      "implementation": "Eager Initialization",
+      "instance_ids": [
+        4474086000,
+        4474086000,
+        4474086000,
+        4474086000,
+        4474086000
+      ],
+      "unique_client_ids": 1,
+      "unique_instance_ids": 1
+    },
+    {
+      "client_ids": [
+        4478860048,
+        4478860048,
+        4478860048,
+        4478860048,
+        4478860048
+      ],
+      "implementation": "Lazy Initialization (basic)",
+      "instance_ids": [
+        4478445824,
+        4478445824,
+        4478445824,
+        4478445824,
+        4478445824
+      ],
+      "unique_client_ids": 1,
+      "unique_instance_ids": 1
+    },
+    {
+      "client_ids": [
+        4479518992,
+        4479518992,
+        4479518992,
+        4479518992,
+        4479518992
+      ],
+      "implementation": "Synchronized Method",
+      "instance_ids": [
+        4478446160,
+        4478446160,
+        4478446160,
+        4478446160,
+        4478446160
+      ],
+      "unique_client_ids": 1,
+      "unique_instance_ids": 1
+    },
+    {
+      "client_ids": [
+        4479553776,
+        4479553776,
+        4479553776,
+        4479553776,
+        4479553776
+      ],
+      "implementation": "Double-Checked Locking",
+      "instance_ids": [
+        4478448176,
+        4478448176,
+        4478448176,
+        4478448176,
+        4478448176
+      ],
+      "unique_client_ids": 1,
+      "unique_instance_ids": 1
+    },
+    {
+      "client_ids": [
+        4479558336,
+        4479558336,
+        4479558336,
+        4479558336,
+        4479558336
+      ],
+      "implementation": "Bill Pugh Implementation",
+      "instance_ids": [
+        4474898480,
+        4474898480,
+        4474898480,
+        4474898480,
+        4474898480
+      ],
+      "unique_client_ids": 1,
+      "unique_instance_ids": 1
+    },
+    {
+      "client_ids": [
+        4479300336,
+        4479300336,
+        4479300336,
+        4479300336,
+        4479300336
+      ],
+      "implementation": "Enum-based Singleton",
+      "instance_ids": [
+        4474092048,
+        4474092048,
+        4474092048,
+        4474092048,
+        4474092048
+      ],
+      "unique_client_ids": 1,
+      "unique_instance_ids": 1
+    }
+  ]
+}
