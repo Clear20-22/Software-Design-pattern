@@ -1,0 +1,57 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment / secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node / JS
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+
+# Java / Kotlin
+*.class
+*.jar
+*.war
+*.ear
+target/
+.gradle/
+**/build/
+
+# .NET
+bin/
+obj/
+
+# Go
+*.exe
+*.dll
+*.so
+*.dylib
+
