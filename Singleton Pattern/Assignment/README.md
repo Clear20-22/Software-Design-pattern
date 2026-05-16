@@ -9,7 +9,7 @@ This project shows 6 Singleton pattern implementations with a MongoDB connection
 3. Synchronized Method (thread-safe)
 4. Double-Checked Locking
 5. Bill Pugh (holder class style)
-6. Enum-based Singleton
+6. Enum-style Singleton (manual, no `enum.Enum`)
 
 ## Project Structure
 

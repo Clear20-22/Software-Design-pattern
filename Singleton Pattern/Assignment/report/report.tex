@@ -1,0 +1,198 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage[table]{xcolor}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+% Custom colors
+\definecolor{passgreen}{RGB}{46, 204, 113}
+\definecolor{failred}{RGB}{231, 76, 60}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textbf{Singleton Pattern Analysis}}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{\small Report - \today}
+
+\title{
+    \textbf{Singleton Pattern Implementation Analysis}\\
+    \large Experimental Results
+}
+\author{Software Design Pattern Study}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% ============================================================
+% SECTION 1: INSTANCE VALIDATION
+% ============================================================
+\section{Instance Validation Results}
+
+\subsection{Evidence from Object IDs}
+
+All implementations maintain a single instance. Same object ID returned on multiple calls:
+
+\begin{table}[H]
+\centering
+\caption{Instance Validation - Object IDs}
+\label{tab:instance}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Implementation} & \textbf{Call 1} & \textbf{Call 2} & \textbf{Result} \\
+\hline\hline
+Eager & 4416955328 & 4416955328 & \cellcolor{passgreen}✓ \\
+Lazy & 4421460928 & 4421460928 & \cellcolor{passgreen}✓ \\
+Synchronized & 4416961040 & 4416961040 & \cellcolor{passgreen}✓ \\
+Double-Checked & 4421459920 & 4421459920 & \cellcolor{passgreen}✓ \\
+Bill Pugh & 4421461264 & 4421461264 & \cellcolor{passgreen}✓ \\
+Enum & 4421460256 & 4421460256 & \cellcolor{passgreen}✓ \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Conclusion:} All implementations pass instance validation.
+
+% ============================================================
+% SECTION 2: MULTITHREADING RESULTS
+% ============================================================
+\section{Multithreading Results}
+
+\subsection{Concurrent Access from 20 Threads}
+
+Test: 20 concurrent threads requesting singleton instances.
+
+\begin{table}[H]
+\centering
+\caption{Threading Test - Concurrent Access}
+\label{tab:threading}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Implementation} & \textbf{Unique Objects} & \textbf{Unique Clients} & \textbf{Result} \\
+\hline\hline
+Eager & 1 & 1 & \cellcolor{passgreen}PASS \\
+Lazy & 20 & 20 & \cellcolor{failred}FAIL \\
+Synchronized & 1 & 1 & \cellcolor{passgreen}PASS \\
+Double-Checked & 1 & 1 & \cellcolor{passgreen}PASS \\
+Bill Pugh & 1 & 1 & \cellcolor{passgreen}PASS \\
+Enum & 1 & 1 & \cellcolor{passgreen}PASS \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Note:} Lazy is not thread-safe. In concurrent access, it produced multiple instances and multiple clients.
+
+\subsection{Why Lazy Is Not Thread-Safe}
+
+The lazy singleton uses a check-then-create pattern. If two threads enter \texttt{\_\_new\_\_} at the same time, both can see \texttt{\_instance is None} before either one assigns the object. That creates a race condition.
+
+\begin{verbatim}
+class LazySingleton:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            # Race window: two threads can both pass this check
+            cls._instance = super().__new__(cls)
+        return cls._instance
+\end{verbatim}
+
+Without a lock around the creation block, the implementation is not thread-safe by design.
+
+\textbf{Conclusion:} Lazy failed the concurrent load test, while the other implementations maintained a single instance.
+
+% ============================================================
+% SECTION 3: PERFORMANCE MEASUREMENTS
+% ============================================================
+\section{Performance Measurements}
+
+\subsection{Initialization and Access Times}
+
+\begin{table}[H]
+\centering
+\caption{Performance Comparison}
+\label{tab:performance}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Implementation} & \textbf{First Access (s)} & \textbf{Avg Access (\textmu s)} \\
+\hline\hline
+Eager & 0.00000000 & 0.0390 \\
+Bill Pugh & 0.00000095 & 0.0354 \\
+Enum & 0.00000095 & 0.0282 \\
+Double-Checked & 0.00000095 & 0.0679 \\
+Lazy & 0.00000095 & 0.1397 \\
+Synchronized & 0.00000167 & 0.1523 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Performance Rankings}
+
+\textbf{Fastest (Repeated Access):}
+\begin{enumerate}
+    \item Enum Singleton: 0.0282 \textmu s
+    \item Bill Pugh Singleton: 0.0354 \textmu s
+    \item Eager Singleton: 0.0390 \textmu s
+\end{enumerate}
+
+\textbf{Slowest (Repeated Access):}
+\begin{enumerate}
+    \item Double-Checked Locking: 0.0679 \textmu s
+    \item Lazy Singleton: 0.1397 \textmu s
+    \item Synchronized Singleton: 0.1523 \textmu s
+\end{enumerate}
+
+\textbf{Performance Variance:} Synchronized is 5.4× slower than Enum.
+
+% ============================================================
+% SECTION 4: COMPARATIVE SUMMARY
+% ============================================================
+\section{Comparative Summary}
+
+\subsection{Key Findings}
+
+\begin{table}[H]
+\centering
+\caption{Implementation Comparison}
+\label{tab:summary}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Implementation} & \textbf{Instance} & \textbf{Thread-Safe} & \textbf{Performance} & \textbf{Overall} \\
+\hline\hline
+Eager & ✓ & ✓ & Good & Excellent \\
+Bill Pugh & ✓ & ✓ & Excellent & Excellent \\
+Enum & ✓ & ✓ & Excellent & Excellent \\
+Double-Checked & ✓ & ✓ & Moderate & Good \\
+Lazy & ✓ & ✗ & Slow & Fair \\
+Synchronized & ✓ & ✓ & Slowest & Poor \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Observations}
+
+\begin{itemize}
+    \item \textbf{Instance Validation:} All 6 implementations maintain single instance (100\% success)
+    \item \textbf{Thread Safety:} 5 implementations are thread-safe by design; Lazy is not thread-safe and failed under concurrency
+    \item \textbf{Which are fastest:} Enum, Bill Pugh, and Eager
+    \item \textbf{Which are thread-safe in practice:} Eager, Synchronized, Double-Checked, Bill Pugh, and Enum
+    \item \textbf{Which show inconsistencies:} None detected
+\end{itemize}
+
+\subsection{Recommendations}
+
+\begin{itemize}
+    \item \textbf{Best Overall:} Enum or Bill Pugh (fast, thread-safe by design)
+    \item \textbf{Balanced:} Eager Singleton (simple, good performance)
+    \item \textbf{Avoid:} Lazy (not thread-safe) and Synchronized (poor performance)
+\end{itemize}
+
+\section{Conclusion}
+
+All six Singleton implementations maintain single instances in single-threaded validation. Under concurrency, Lazy is not thread-safe and failed the thread test. Performance varies significantly, with Enum and Bill Pugh offering optimal throughput (0.0282--0.0354 \textmu s per access).
+
+\end{document}

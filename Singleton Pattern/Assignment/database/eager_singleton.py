@@ -5,8 +5,9 @@ class EagerMongoManager(BaseMongoManager):
 	pass
 
 
-_instance = EagerMongoManager()
+class _EagerHolder:
+	instance = EagerMongoManager()
 
 
 def get_instance() -> EagerMongoManager:
-	return _instance
+	return _EagerHolder.instance

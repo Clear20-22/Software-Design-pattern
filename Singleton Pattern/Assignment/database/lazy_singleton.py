@@ -8,7 +8,6 @@ class LazyMongoManager(BaseMongoManager):
 	_instance = None
 
 	def __new__(cls):
-		# This one is intentionally simple and not thread-safe.
 		if cls._instance is None:
 			config = get_mongo_config()
 			slow_init_seconds = config["slow_init_seconds"]

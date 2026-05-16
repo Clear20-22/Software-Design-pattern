@@ -73,7 +73,7 @@ Table:
 
 Observation:
 
-- Lazy singleton (basic version) produced multiple instances and multiple clients under concurrency.
+- Lazy singleton (basic version) is not thread-safe; it produced multiple instances and multiple clients under concurrency.
 - All synchronized/thread-safe implementations remained consistent.
 
 ## 3) Performance Measurements
@@ -117,5 +117,5 @@ Observation:
 - Fastest average access in this run: Eager (0.0198 us).
 - Most expensive average access in this run: Synchronized (0.1591 us).
 - Consistent under thread test: Eager, Synchronized, DoubleChecked, BillPugh, Enum.
-- Inconsistent under thread test: Lazy (20 unique instances with 20 threads).
+- Inconsistent under thread test: Lazy (20 unique instances with 20 threads, so not thread-safe).
 - Single-thread repeated instantiation: all six returned same instance and same client.

@@ -13,7 +13,6 @@ class _Holder:
 
 
 def get_instance() -> BillPughMongoManager:
-	# Python-style holder: create when first requested.
 	if _Holder.instance is None:
 		with _Holder.lock:
 			if _Holder.instance is None:
