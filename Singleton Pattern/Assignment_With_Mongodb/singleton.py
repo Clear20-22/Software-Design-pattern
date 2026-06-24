@@ -5,7 +5,7 @@ import threading
 from pymongo import MongoClient
 
 
-URL = "mongodb+srv://single:single123@cluster0.wkza9aw.mongodb.net/?appName=Cluster0"
+URL = "mongodb://mimrobo1726_db_user:mimrobo1726_db_user@ac-gq1y29g-shard-00-00.wkza9aw.mongodb.net:27017,ac-gq1y29g-shard-00-01.wkza9aw.mongodb.net:27017,ac-gq1y29g-shard-00-02.wkza9aw.mongodb.net:27017/?ssl=true&replicaSet=atlas-8a1g5a-shard-0&authSource=admin&appName=Cluster0"
 DB_NAME = "singleton_db"
 COL_NAME = "Users"
 
