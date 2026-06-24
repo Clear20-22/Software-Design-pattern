@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Singleton Pattern + MongoDB</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#f4f6f9;
+    padding:30px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+    color:#222;
+}
+
+.buttons{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:12px;
+}
+
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:8px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+    font-size:15px;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.card{
+    margin-top:30px;
+    background:white;
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+.success{
+    color:green;
+    font-weight:bold;
+}
+
+.fail{
+    color:red;
+    font-weight:bold;
+}
+
+.info{
+    margin:10px 0;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th{
+    background:#2563eb;
+    color:white;
+    padding:10px;
+}
+
+td{
+    padding:10px;
+    border:1px solid #ddd;
+}
+
+pre{
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Singleton Design Pattern Demonstration</h1>
+
+<div class="buttons">
+
+<button onclick="loadPattern('eager')">
+Eager Singleton
+</button>
+
+<button onclick="loadPattern('lazy')">
+Lazy Singleton
+</button>
+
+<button onclick="loadPattern('safe')">
+Thread Safe
+</button>
+
+<button onclick="loadPattern('double')">
+Double Checked
+</button>
+
+<button onclick="loadPattern('bill')">
+Bill Pugh
+</button>
+
+<button onclick="loadPattern('enum')">
+Enum Style
+</button>
+
+</div>
+
+<div id="result"></div>
+
+<script>
+
+async function loadPattern(pattern){
+
+    const resultDiv = document.getElementById("result");
+
+    resultDiv.innerHTML = "<h3>Loading...</h3>";
+
+    try{
+
+        const response = await fetch(`/singleton/${pattern}`);
+        const data = await response.json();
+
+        let html = `
+        <div class="card">
+
+            <h2>${data.pattern}</h2>
+
+            <div class="info">
+                <strong>First Instance ID:</strong>
+                ${data.first_id}
+            </div>
+
+            <div class="info">
+                <strong>Second Instance ID:</strong>
+                ${data.second_id}
+            </div>
+
+            <div class="info">
+                <strong>Third Instance ID:</strong>
+                ${data.third_id}
+            </div>
+
+            <div class="${
+                data.same_object ? "success" : "fail"
+            }">
+                ${
+                    data.same_object
+                    ? "✓ Singleton Verified"
+                    : "✗ Singleton Failed"
+                }
+            </div>
+
+            <br>
+
+            <h3>MongoDB User Count: ${data.user_count}</h3>
+        `;
+
+        if(data.users.length > 0){
+
+            html += `
+            <table>
+
+                <tr>
+                    <th>#</th>
+                    <th>User Document</th>
+                </tr>
+            `;
+
+            data.users.forEach((user,index)=>{
+
+                html += `
+                <tr>
+                    <td>${index+1}</td>
+                    <td>
+                        <pre>${JSON.stringify(user,null,2)}</pre>
+                    </td>
+                </tr>
+                `;
+            });
+
+            html += `</table>`;
+        }
+        else{
+
+            html += `
+            <p>No users found in MongoDB.</p>
+            `;
+        }
+
+        html += `</div>`;
+
+        resultDiv.innerHTML = html;
+
+    }
+    catch(error){
+
+        resultDiv.innerHTML = `
+        <div class="card">
+            <h3 style="color:red">
+                Error connecting to FastAPI
+            </h3>
+
+            <pre>${error}</pre>
+        </div>
+        `;
+    }
+}
+
+</script>
+
+</body>
+</html>
