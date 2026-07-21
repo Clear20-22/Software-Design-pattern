@@ -1,54 +1,144 @@
-# University Management System — FastAPI + MongoDB
+# University Management System — সফটওয়্যার ডিজাইন প্যাটার্ন গাইড
 
-Lab project combining three design patterns:
+এই প্রজেক্টটি একটি **FastAPI + MongoDB** ভিত্তিক বিশ্ববিদ্যালয় ব্যবস্থাপনা সিস্টেম, যেখানে প্রধান সফটওয়্যার ডিজাইন প্যাটার্নগুলো (Design Patterns) প্রয়োগ করা হয়েছে।
 
-| Pattern   | Where                                   | Problem it solves |
-|-----------|------------------------------------------|--------------------|
-| Singleton | `app/database.py`                        | One shared MongoDB connection for the whole app |
-| Factory   | `app/factories/user_factory.py`          | Role-based user creation (student/teacher/admin) without the rest of the app knowing the concrete classes |
-| Observer  | `app/observers/`                         | Classroom notice board notifies all enrolled students without being coupled to *how* they're notified |
+---
 
-## Run it
+## 📚 ডিজাইন প্যাটার্ন (Software Design Patterns) কী?
+
+ডিজাইন প্যাটার্ন হলো সফটওয়্যার ডেভেলপমেন্টে বারবার আসা সাধারণ সমস্যাগুলোর পরীক্ষিত এবং কার্যকরী সমাধান। এটি কোনো প্রস্তুতকৃত কোড নয়, বরং সমস্যা সমাধানের একটি স্ট্যান্ডার্ড ব্লুপ্রিন্ট।
+
+ডিজাইন প্যাটার্ন মূলত **৩টি প্রধান ভাগে** বিভক্ত:
+1. **Creational Patterns** (অবজেক্ট তৈরি সংক্রান্ত)
+2. **Structural Patterns** (কাঠামোগত)
+3. **Behavioral Patterns** (আচরণগত)
+
+---
+
+## 1. Creational Patterns (অবজেক্ট তৈরি সংক্রান্ত প্যাটার্ন)
+
+অবজেক্ট কিভাবে তৈরি হবে এবং মেমোরিতে অবজেক্টের নিয়ন্ত্রণ কিভাবে থাকবে তা এই প্যাটার্নগুলো পরিচালনা করে।
+
+### 🛠️ Singleton Pattern (সিঙ্গেলটন)
+- **সহজ সংজ্ঞা:** পুরো অ্যাপ্লিকেশনে একটি ক্লাসের কেবল **একটিমাত্র অবজেক্ট (Instance)** থাকবে এবং সবাই সেই একই অবজেক্ট ব্যবহার করবে।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন পুরো সিস্টেমে একাধিক অবজেক্ট তৈরির প্রয়োজন নেই এবং একটি শেয়ার্ড রিসোর্স দরকার (যেমন: Database Connection, Logger, Config Management)।
+- **প্রজেক্টে প্রয়োগ:** `app/database.py`-তে `MongoDBSingleton` ডাটাবেজ কানেকশন নিশ্চিত করে।
+
+### 🏭 Factory Method Pattern (ফ্যাক্টরি মেথড)
+- **সহজ সংজ্ঞা:** অবজেক্ট তৈরির লজিক সরাসরি না লিখে একটি ইন্টারফেস/মেথডের মাধ্যমে তৈরি করা হয়, যাতে অবজেক্টের অভ্যন্তরীণ ক্লাস গোপন থাকে।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন রোল বা কন্ডিশনের উপর ভিত্তি করে ভিন্ন ভিন্ন অবজেক্ট তৈরি করতে হয়।
+- **প্রজেক্টে প্রয়োগ:** `app/factories/user_factory.py`-তে `UserFactory` রোল অনুযায়ী `Student`, `Teacher`, বা `Admin` অবজেক্ট তৈরি করে।
+
+### 🏛️ Abstract Factory Pattern (অ্যাবস্ট্রাক্ট ফ্যাক্টরি)
+- **সহজ সংজ্ঞা:** সম্পর্কিত বা নির্ভরশীল একাধিক ফ্যাক্টরির একটি পরিবার তৈরি করতে ব্যবহৃত হয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন সিস্টেমকে বিভিন্ন ব্র্যান্ড বা ক্যাটাগরির প্রোডাক্ট পরিবারের সাথে মানিয়ে নিতে হয় (যেমন: Windows UI vs Mac UI উপাদান তৈরি)।
+
+### 🧱 Builder Pattern (বিল্ডার)
+- **সহজ সংজ্ঞা:** জটিল কোনো অবজেক্টকে ধাপের পর ধাপ (Step-by-Step) তৈরি করতে ব্যবহৃত হয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন কোনো অবজেক্ট তৈরি করতে অনেকগুলো কনফিগারেবল অপশন বা প্যারামিটার দরকার হয় (যেমন: HTTP Request Builder, Pizza Builder)।
+
+### 👥 Prototype Pattern (প্রোটোটাইপ)
+- **সহজ সংজ্ঞা:** নতুন অবজেক্ট স্ক্র্যাচ থেকে তৈরি না করে বিদ্যমান অবজেক্টকে ক্লোন (Clone/Copy) করে তৈরি করা হয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন অবজেক্ট তৈরির খরচ অনেক বেশি (High Memory/CPU Cost) এবং বিদ্যমান অবজেক্টের মতোই আরেকটি অবজেক্ট দরকার।
+
+---
+
+## 2. Structural Patterns (কাঠামোগত প্যাটার্ন)
+
+ক্লাস এবং অবজেক্টগুলোকে কিভাবে একত্রে সাজিয়ে বড় ও নমনীয় কাঠামো তৈরি করা যায় তা এই প্যাটার্নগুলো পরিচালনা করে।
+
+### 🔌 Adapter Pattern (অ্যাডাপ্টার)
+- **সহজ সংজ্ঞা:** দুটি অসঙ্গতিপূর্ণ ইন্টারফেসের মধ্যে সংযোগ স্থাপন করে তাদের একসাথে কাজ করার সুযোগ দেয় (যেমন: রিয়েল-লাইফ সকেট অ্যাডাপ্টার)।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন কোনো থার্ড-পার্টি লাইব্রেরি বা পুরোনো কোড নতুন কোডের ইন্টারফেসের সাথে মিলে না।
+
+### 🌉 Bridge Pattern (ব্রিজ)
+- **সহজ সংজ্ঞা:** অ্যাবস্ট্রাকশন (Abstraction) এবং ইমপ্লিমেন্টেশন (Implementation)-কে আলাদা করে যাতে দুটি স্বাধীনভাবে পরিবর্তন করা যায়।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন আপনার ক্লাসের একাধিক রূপভেদ বা মাত্রা থাকে (যেমন: Shape + Color, Remote Control + Device)।
+
+### 🌴 Composite Pattern (কম্পোজিট)
+- **সহজ সংজ্ঞা:** অবজেক্টগুলোকে ট্রি স্ট্রাকচারে (Tree Structure) সাজিয়ে একক ও সমষ্টিগত অবজেক্টকে একই নিয়মে ট্রিট করা হয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন ডাটা হাইরার্কিতে থাকে (যেমন: ফাইল ও ফোল্ডার সিস্টেম, অর্গানাইজেশনাল চার্ট)।
+
+### 🎁 Decorator Pattern (ডেকোরেটর)
+- **সহজ সংজ্ঞা:** মূল অবজেক্টের কাঠামো না বদলে তার ওপর গতিশীলভাবে (Dynamically) নতুন দায়িত্ব বা ফিচার যুক্ত করা হয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন কাস্টম ফিচার বা ফিল্টার যুক্ত করতে হয় (যেমন: কফি বা পিজ্জার টপিং, ফ্লাস্ক/ফাস্টএপিআই ডেকোরেটর `@app.get()`)।
+
+### 🏛️ Facade Pattern (ফ্যাসাদ)
+- **সহজ সংজ্ঞা:** ব্যাকএন্ডের একটি জটিল সিস্টেমের সামনে একটি সহজ ও সাবলীল ইন্টারফেস প্রদান করে।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন কোনো জটিল লাইব্রেরি বা মাল্টি-স্টেপ প্রসেসকে এক লাইনের মেথড কলে রূপান্তর করতে চান (যেমন: Payment Gateway Facade)।
+
+### 🍃 Flyweight Pattern (ফ্লাইওয়েট)
+- **সহজ সংজ্ঞা:** একাধিক সমজাতীয় অবজেক্টের মধ্যে সাধারণ তথ্য শেয়ার করে মেমোরি খরচ কমায়।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন অ্যাপ্লিকেশনে হাজার হাজার একই ধরনের অবজেক্ট মেমোরি দখল করে (যেমন: গেমের গাছপালা, টেক্সট এডিটরের ক্যারেক্টার)।
+
+### 🛡️ Proxy Pattern (প্রক্সি)
+- **সহজ সংজ্ঞা:** মূল অবজেক্টের সামনে একটি সারোগেট বা কন্ট্রোলার হিসেবে কাজ করে অবজেক্টের অ্যাক্সেস নিয়ন্ত্রণ করে।
+- **কখন ও কোথায় ব্যবহার করবেন:** সিকিউরিটি চেক, ক্যাশিং বা লেজি লোডিং (Lazy Loading) এর জন্য (যেমন: Virtual Proxy, Protection Proxy)।
+
+---
+
+## 3. Behavioral Patterns (আচরণগত প্যাটার্ন)
+
+অবজেক্টগুলোর মধ্যকার যোগাযোগ এবং দায়িত্ব বণ্টন পরিচালনা করে।
+
+### 📢 Observer Pattern (অবজারভার)
+- **সহজ সংজ্ঞা:** একটি প্রধান অবজেক্টের (Subject) অবস্থা পরিবর্তিত হলে তার সাথে যুক্ত সব সাবস্ক্রাইবার অবজেক্ট (Observers) স্বয়ংক্লিয়ভাবে নোটিফিকেশন পায়।
+- **কখন ও কোথায় ব্যবহার করবেন:** ইভেন্ট-ড্রিভেন নোটিফিকেশন সিস্টেমে (যেমন: নোটিশ বোর্ড, ইউটিউব সাবস্ক্রিপশন, ওয়েবসকেট পুশ)।
+- **প্রজেক্টে প্রয়োগ:** `app/observers/` ফোল্ডারে `NoticeBoard` (Subject) এবং `StudentObserver` (Observer)।
+
+### 🎯 Strategy Pattern (স্ট্র্যাটেজি)
+- **সহজ সংজ্ঞা:** বিভিন্ন অ্যালগরিদমকে আলাদা আলাদা ক্লাসে ক্যাপসুল করে রানটাইমে প্রয়োজন অনুযায়ী পরিবর্তন করা হয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** যখন বিভিন্ন পেমেন্ট মেথড (bKash, Nagad, Credit Card) বা বিভিন্ন সোর্টিং অ্যালগরিদম রানটাইমে বেছে নিতে হয়।
+
+### 📜 Command Pattern (কমান্ড)
+- **সহজ সংজ্ঞা:** কোনো অ্যাকশন বা রিকোয়েস্টকে একটি অবজেক্টে রূপান্তর করা হয় যাতে তা কিউ (Queue), লগ বা আনডু (Undo) করা যায়।
+- **কখন ও কোথায় ব্যবহার করবেন:** টিভি রিমোট বাটন, টেক্সট এডিটরের Undo/Redo অপারেশন।
+
+### 🔄 Iterator Pattern (ইটারেটর)
+- **সহজ সংজ্ঞা:** অবজেক্ট সংগ্রহের (Collection) ভেতরের কাঠামো প্রকাশ না করেই একটার পর একটা উপাদান অ্যাক্সেস করার সুবিধা দেয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** কাস্টম লিস্ট, ফ্রি ট্রি স্ট্রাকচার ব্রাউজ করতে (যেমন: Python `for element in list`)।
+
+### 🎭 State Pattern (স্টেট)
+- **সহজ সংজ্ঞা:** অবজেক্টের অভ্যন্তরীণ অবস্থা পরিবর্তিত হলে তার আচরণ পরিবর্তিত হতে দেয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** অর্ডারের স্ট্যাটাস (Pending $\rightarrow$ Shipped $\rightarrow$ Delivered), গেমের প্লেয়ারের অবস্থা (Alive/Dead)।
+
+### 📐 Template Method Pattern (টেমপ্লেট মেথড)
+- **সহজ সংজ্ঞা:** একটি অ্যালগরিদমের মূল ধাপগুলো সুপারক্লাসে নির্দিষ্ট করে দিয়ে সাবক্লাসগুলোতে বিস্তারিত বাস্তবায়ন করা হয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** ডাটা প্রসেসিং পাইপলাইন (যেমন: CSV/PDF/JSON ডাটা পার্সার)।
+
+### 🔗 Chain of Responsibility Pattern (চেইন অব রেসপন্সিবিলিটি)
+- **সহজ সংজ্ঞা:** কোনো রিকোয়েস্ট একাধিক হ্যান্ডলারের চেইনের মধ্য দিয়ে যায় যতক্ষণ না কোনো হ্যান্ডলার এটি হ্যান্ডেল করে।
+- **কখন ও কোথায় ব্যবহার করবেন:** মিডলওয়্যার স্ট্যাক, অথেন্টিকেশন চেক চেইন।
+
+### 🤝 Mediator Pattern (মিডিয়েটর)
+- **সহজ সংজ্ঞা:** বিভিন্ন অবজেক্টের মধ্যে সরাসরি যোগাযোগ বন্ধ করে একটি সেন্ট্রাল মিডিয়েটর অবজেক্টের মাধ্যমে যোগাযোগ করায়।
+- **কখন ও কোথায় ব্যবহার করবেন:** চ্যাট রুম সিস্টেম, এয়ার ট্রাফিক কন্ট্রোল টাওয়ার।
+
+### 💾 Memento Pattern (মেমেন্টো)
+- **সহজ সংজ্ঞা:** কোনো অবজেক্টের ভেতরের গোপনীয়তা নষ্ট না করে তার বর্তমান স্টেট সেভ এবং পরবর্তীতে রিস্টোর করার সুবিধা দেয়।
+- **কখন ও কোথায় ব্যবহার করবেন:** ফাইল এডিটরের Undo/Snapshot ফিচার।
+
+---
+
+## 🏛️ এই প্রজেক্টে ৩টি প্রধান প্যাটার্নের সচিত্র বাস্তবায়ন
+
+| প্যাটার্ন | প্রজেক্ট ফাইল | উদ্দেশ্য ও কার্যকারিতা |
+|---|---|---|
+| **Singleton** | [app/database.py](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/database.py) | পুরো ব্যাকএন্ডের জন্য মাত্র ১টি MongoDB 클라이언트 নিশ্চিত করে। |
+| **Factory Method** | [app/factories/user_factory.py](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/factories/user_factory.py) | `student`, `teacher`, `admin` ইউজার তৈরির কাজ রাউটার থেকে ডিকাপল করে ফ্যাক্টরিতে পাঠায়। |
+| **Observer** | [app/observers/](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/observers/) | নোটিশ পাবলিশ হলে এনরোল্ড স্টুডেন্টদের ডাটাবেজ এবং লাইভ WebSocket-এ নোটিফিকেশন প্রদান করে। |
+
+---
+
+## 🚀 প্রজেক্ট রান করার উপায়
 
 ```bash
+# ১. ভার্চুয়াল এনভায়রনমেন্টে ডিপেন্ডেন্সি ইনস্টল করুন
 pip install -r requirements.txt
-export MONGO_URI="mongodb://localhost:27017"
-export JWT_SECRET_KEY="some-long-random-string"
+
+# ২. সার্ভার চালু করুন
 uvicorn app.main:app --reload
 ```
 
-Docs at `http://localhost:8000/docs`.
-
-## How the Observer pattern is wired up (this week's task)
-
-- **Subject** = `NoticeBoard` (one per classroom, `app/observers/notice_board.py`).
-  Holds a list of Observers and exposes `publish_notice()`, which
-  saves the notice then calls `notify()` — nothing else.
-- **Observer** = `StudentObserver` (`app/observers/student_observer.py`).
-  One instance per enrolled student. `update()` decides what
-  "getting notified" actually means: write to the `notifications`
-  collection, and push live over the student's WebSocket if they're
-  connected.
-- **Registry** = `NoticeBoardManager`. Hands out the right
-  `NoticeBoard` per classroom and re-syncs its observer list from the
-  `enrollments` collection every time, so newly enrolled/unenrolled
-  students are always up to date.
-
-Because `NoticeBoard` only ever calls `observer.update(notice)`, you
-can add a new notification channel (email, SMS, push service) by
-writing a new `Observer` subclass and attaching it — the notice board
-route in `app/routers/notice.py` never changes.
-
-## Typical flow to test
-
-1. `POST /auth/register` — role=`teacher`, and register a couple of
-   `student` accounts.
-2. `POST /auth/login` as the teacher → get a token.
-3. `POST /classroom/create?name=CSE401` (teacher token).
-4. `POST /classroom/enroll` with `classroom_id` + each `student_id`.
-5. Open `ws://localhost:8000/ws/notifications/{student_id}` for a
-   student (e.g. via a WebSocket test client).
-6. `POST /classroom/{classroom_id}/notice` as the teacher with a
-   title/content → every enrolled student's socket receives it
-   instantly, and `GET /student/notifications` (as that student)
-   shows it persisted too.
+- **ইন্টারেক্টিভ API ডকুমেন্টেশন:** `http://localhost:8000/docs`
+- **লাইভ ফ্রন্টএন্ড ইন্টারফেস:** `http://localhost:8000/noticeboard.html` (বা ব্রাউজারে `noticeboard.html` ফাইলটি ওপেন করুন)।
