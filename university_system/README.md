@@ -120,13 +120,58 @@
 
 ---
 
-## 🏛️ এই প্রজেক্টে ৩টি প্রধান প্যাটার্নের সচিত্র বাস্তবায়ন
+## 🏛️ এই প্রজেক্টে ৫টি প্রধান প্যাটার্নের সচিত্র বাস্তবায়ন
 
 | প্যাটার্ন | প্রজেক্ট ফাইল | উদ্দেশ্য ও কার্যকারিতা |
 |---|---|---|
-| **Singleton** | [app/database.py](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/database.py) | পুরো ব্যাকএন্ডের জন্য মাত্র ১টি MongoDB 클라이언트 নিশ্চিত করে। |
+| **Singleton** | [app/database.py](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/database.py) | পুরো ব্যাকএন্ডের জন্য মাত্র ১টি MongoDB ক্লায়েন্ট নিশ্চিত করে। |
 | **Factory Method** | [app/factories/user_factory.py](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/factories/user_factory.py) | `student`, `teacher`, `admin` ইউজার তৈরির কাজ রাউটার থেকে ডিকাপল করে ফ্যাক্টরিতে পাঠায়। |
 | **Observer** | [app/observers/](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/observers/) | নোটিশ পাবলিশ হলে এনরোল্ড স্টুডেন্টদের ডাটাবেজ এবং লাইভ WebSocket-এ নোটিফিকেশন প্রদান করে। |
+| **Strategy** | [app/strategies/](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/strategies/grading_strategy.py) | রানটাইমে বিভিন্ন কোর্সের গ্র্যাডিং অ্যালগরিদম (Standard Absolute, Relative Curve, Pass/Fail) গতিশীলভাবে পরিবর্তন ও মূল্যায়ন করে। |
+| **State** | [app/states/](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/states/assignment_state.py) | অ্যাসাইনমেন্টের জীবনচক্র (`Draft` ➔ `Open` ➔ `Under Review` ➔ `Graded`) এবং সাবমিশন পারমিশন ডাইনামিক স্টেট মেশিনের মাধ্যমে নিয়ন্ত্রণ করে। |
+
+---
+
+## 🎯 ১. Strategy Pattern (স্ট্র্যাটেজি প্যাটার্ন) — বিস্তারিত বিশ্লেষণ
+
+### ❓ কী সমস্যা সমাধান করে? (Problem Solved)
+সিস্টেমে যখন একাধিক গ্রেডিং নীতি (যেমন: স্ট্যান্ডার্ড মার্কস, রিলেটিভ কার্ভ, বা পাস/ফেইল) প্রয়োগের প্রয়োজন হয়, তখন সাধারণ কোডিং পদ্ধতিতে ব্যাকএন্ডে প্রচুর জটিল `if-elif-else` বা `switch` শর্ত লিখতে হয়:
+```python
+# প্যাটার্ন ছাড়া অনাকাঙ্ক্ষিত কোড:
+if strategy == "standard":
+    # 80+ A, 70+ B...
+elif strategy == "relative":
+    # Calculate Mean & Standard Deviation...
+elif strategy == "pass_fail":
+    # Score >= 50 -> PASS...
+```
+এই পদ্ধতিতে নতুন কোনো গ্রেডিং নিয়ম (যেমন: GPA Grade Curve) যোগ করতে গেলে মূল কোড এডিট করতে হয়, যা সফটওয়্যার আর্কিটেকচারের **Open-Closed Principle (SOLID)** লঙ্ঘন করে।
+
+### 💡 স্ট্র্যাটেজি প্যাটার্নের সমাধান ও সুবিধা (Advantages)
+1. **Dynamic Algorithm Switching (রানটাইমে অ্যালগরিদম পরিবর্তন):** টিচার সিস্টেম রিস্টার্ট না করেই রানটাইমে ড্রপডাউন থেকে যেকোনো সময় গ্রেডিং স্ট্র্যাটেজি বেছে নিতে পারেন।
+2. **Encapsulation & Decoupling (কোড আলাদাকরণ):** প্রতিটি গ্রেডিং নিয়মকে স্বাধীন কনক্রিট ক্লাসে (`StandardGradingStrategy`, `RelativeGradingStrategy`, `PassFailGradingStrategy`) আলাদা রাখা হয়েছে।
+3. **Easy Scalability (সহজ সম্প্রসারণযোগ্যতা):** ভবিষ্যতে নতুন গ্রেডিং পলিসি যোগ করতে চাইলে আগের কোডে হাত না দিয়ে শুধু নতুন একটি Strategy ক্লাস লিখলেই পুরো সিস্টেমের সাথে কাজ করবে।
+
+---
+
+## 🔄 ২. State Pattern (স্টেট প্যাটার্ন) — বিস্তারিত বিশ্লেষণ
+
+### ❓ কী সমস্যা সমাধান করে? (Problem Solved)
+একটি অ্যাসাইনমেন্টের একাধিক ধাপ বা জীবনচক্র থাকে (`Draft` ➔ `Open` ➔ `Under Review` ➔ `Graded`)। সাধারণ পদ্ধতিতে প্রতিটি অ্যাকশনে (যেমন: সাবমিট করা বা গ্রেড দেওয়া) শত শত শর্ত চেক করতে হয়:
+```python
+# প্যাটার্ন ছাড়া জটিল কোড:
+if action == "submit":
+    if state != "open":
+        raise Exception("Submissions closed")
+    if is_deadline_passed:
+        raise Exception("Late submission")
+```
+এর ফলে লাইফসাইকেল জটিল হলে কোড বোঝা কষ্টকর হয় এবং ভুলেও অনাকাঙ্ক্ষিত অবস্থায় কাজ চলে যেতে পারে (যেমন: ড্রাফট অবস্থায় স্টুডেন্ট সলিউশন জমা দিয়ে ফেলা)।
+
+### 💡 স্টেট প্যাটার্নের সমাধান ও সুবিধা (Advantages)
+1. **State-Driven Behavior (স্টেট-ভিত্তিক আচরণ):** প্রতিটি অবস্থাকে স্বাধীন স্টেট ক্লাসে (`DraftState`, `OpenState`, `UnderReviewState`, `GradedState`) রূপান্তর করা হয়েছে।
+2. **Self-Governing Transitions (স্বয়ংক্রিয় স্থিতি পরিবর্তন):** `AssignmentContext` অবজেক্ট নিজেই তার ভেতরের স্টেট পরিবর্তন করে। উদাহরণস্বরূপ: `DraftState` থেকে সরাসরি `finalize_grades()` কল করলে স্টেট ক্লাস নিজেই এরর থ্রো করবে।
+3. **Clear Pipeline & Security (স্বচ্ছ পাইপলাইন ও নিরাপত্তা):** ফ্রন্টএন্ডে ভিজ্যুয়াল পাইপলাইন স্টিপার (`[📝 Draft] ➔ [🔓 Open] ➔ [🔒 Under Review] ➔ [✅ Graded]`) ব্যবহারকারীকে স্পষ্ট ধারণা দেয় এবং স্টুডেন্টদের অনাকাঙ্ক্ষিত সাবমিশন থেকে রক্ষা করে।
 
 ---
 

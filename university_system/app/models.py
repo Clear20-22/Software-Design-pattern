@@ -31,3 +31,27 @@ class NotificationResponse(BaseModel):
     message: str
     is_read: bool
     created_at: datetime
+
+
+class StudentScoreItem(BaseModel):
+    student_id: str
+    marks: float
+
+
+class GradeEvaluationRequest(BaseModel):
+    scores: list[StudentScoreItem]
+
+
+class AssignmentCreateRequest(BaseModel):
+    title: str
+    description: str
+    max_marks: float = 100.0
+    deadline: str = ""
+
+
+class AssignmentSubmitRequest(BaseModel):
+    submission_text: str
+
+
+class AssignmentTransitionRequest(BaseModel):
+    action: str  # "publish" | "close" | "finalize" | "reopen"
