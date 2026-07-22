@@ -120,7 +120,7 @@
 
 ---
 
-## 🏛️ এই প্রজেক্টে ৫টি প্রধান প্যাটার্নের সচিত্র বাস্তবায়ন
+## 🏛️ এই প্রজেক্টে ৬টি প্রধান প্যাটার্নের সচিত্র বাস্তবায়ন
 
 | প্যাটার্ন | প্রজেক্ট ফাইল | উদ্দেশ্য ও কার্যকারিতা |
 |---|---|---|
@@ -129,6 +129,7 @@
 | **Observer** | [app/observers/](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/observers/) | নোটিশ পাবলিশ হলে এনরোল্ড স্টুডেন্টদের ডাটাবেজ এবং লাইভ WebSocket-এ নোটিফিকেশন প্রদান করে। |
 | **Strategy** | [app/strategies/](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/strategies/grading_strategy.py) | রানটাইমে বিভিন্ন কোর্সের গ্র্যাডিং অ্যালগরিদম (Standard Absolute, Relative Curve, Pass/Fail) গতিশীলভাবে পরিবর্তন ও মূল্যায়ন করে। |
 | **State** | [app/states/](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/states/assignment_state.py) | অ্যাসাইনমেন্টের জীবনচক্র (`Draft` ➔ `Open` ➔ `Under Review` ➔ `Graded`) এবং সাবমিশন পারমিশন ডাইনামিক স্টেট মেশিনের মাধ্যমে নিয়ন্ত্রণ করে। |
+| **Visitor** | [app/visitors/](file:///Users/jubayerahmedsojib/Documents/GitHub/Software%20Design%20pattern/university_system/app/visitors/classroom_visitor.py) | **Double Dispatch** ব্যবহার করে মূল ডাটা ক্লাসের কোড না ছুঁয়েই ডাইনামিক পারফরম্যান্স এনালাইসিস, ঝুঁকিপূর্ণ অডিট এবং রিপোর্ট তৈরি করে। |
 
 ---
 
@@ -172,6 +173,29 @@ if action == "submit":
 1. **State-Driven Behavior (স্টেট-ভিত্তিক আচরণ):** প্রতিটি অবস্থাকে স্বাধীন স্টেট ক্লাসে (`DraftState`, `OpenState`, `UnderReviewState`, `GradedState`) রূপান্তর করা হয়েছে।
 2. **Self-Governing Transitions (স্বয়ংক্রিয় স্থিতি পরিবর্তন):** `AssignmentContext` অবজেক্ট নিজেই তার ভেতরের স্টেট পরিবর্তন করে। উদাহরণস্বরূপ: `DraftState` থেকে সরাসরি `finalize_grades()` কল করলে স্টেট ক্লাস নিজেই এরর থ্রো করবে।
 3. **Clear Pipeline & Security (স্বচ্ছ পাইপলাইন ও নিরাপত্তা):** ফ্রন্টএন্ডে ভিজ্যুয়াল পাইপলাইন স্টিপার (`[📝 Draft] ➔ [🔓 Open] ➔ [🔒 Under Review] ➔ [✅ Graded]`) ব্যবহারকারীকে স্পষ্ট ধারণা দেয় এবং স্টুডেন্টদের অনাকাঙ্ক্ষিত সাবমিশন থেকে রক্ষা করে।
+
+---
+
+## 📊 ৩. Visitor Pattern (ভিজিটর প্যাটার্ন) — বিস্তারিত বিশ্লেষণ
+
+### ❓ কী সমস্যা সমাধান করে? (Problem Solved)
+একটি ক্লাসরুমে বিভিন্ন ডাটা অবজেক্ট থাকে (`Classroom`, `Assignment`, `Grade`)। যদি ভবিষ্যতে এই অবজেক্টগুলোর ওপর নতুন নতুন রিপোর্ট (যেমন: পারফরম্যান্স এনালাইসিস, ঝুঁকিপূর্ণ স্টুডেন্ট অডিট, বা টেক্সট এক্সপোর্ট) তৈরির প্রয়োজন হয়, তবে সাধারণ পদ্ধতিতে মূল ডাটা ক্লাসগুলোতে গাদা গাদা মেথড লিখতে হতো:
+```python
+# প্যাটার্ন ছাড়া অনাকাঙ্ক্ষিত ক্লাটার্ড কোড:
+class Classroom:
+    def calculate_average_marks(self): ...
+    def audit_failing_students(self): ...
+    def export_markdown_summary(self): ...
+```
+এর ফলে মূল ডাটা অবজেক্টগুলোর ক্লাস নষ্ট হতো এবং **Open-Closed Principle (SOLID)** লঙ্ঘিত হতো।
+
+### 💡 ভিজিটর প্যাটার্নের সমাধান ও সুবিধা (Advantages)
+1. **Separation of Operations (অপারেশন ও ডাটা পৃথকীকরণ):** ডাটা অবজেক্টের শ্রেণি নির্দিষ্ট রেখে অ্যানালিটিক্স লজিক সম্পূর্ণ আলাদা `ClassroomVisitor` ক্লাসে নিয়ে আসা হয়েছে।
+2. **Double Dispatch Mechanism (ডাবল ডিসপ্যাচ):** দুই ধাপে মেথড কল (`element.accept(visitor)` $\rightarrow$ `visitor.visit_xxx(element)`) নিশ্চিত করে ডাটা ক্লাসের কোড না চুয়েই নতুন নতুন অডিট ও এনালাইসিস যোগ করা যায়।
+3. **৩টি শক্তিশালী ডাইনামিক ভিজিটর:**
+   - **`PerformanceAnalyticsVisitor`:** গড় মার্কস, পাসের হার, এবং সর্বোচ্চ/সর্বনিম্ন নম্বর হিসেব করে।
+   - **`RiskAuditVisitor`:** ফেইলিং স্টুডেন্ট ও জমা না হওয়া অ্যাসাইনমেন্ট শনাক্ত করে **🚨 Academic Risk Zone** অ্যালার্ট দেয়।
+   - **`MarkdownReportVisitor`:** পুরো ক্লাসরুমের একটি সুন্দর ডায়াগ্রামভিত্তিক রিপোর্ট টেক্সট তৈরি করে।
 
 ---
 

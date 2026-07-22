@@ -447,6 +447,22 @@
           <div id="assignments-list" style="display:flex;flex-direction:column;gap:10px"></div>
         </div>
 
+        <div class="composer hidden" id="visitor-panel" style="margin-top:12px">
+          <div style="font-weight:600;font-size:13.5px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+            <span>📊 Visitor Pattern: Analytics &amp; Audit Engine</span>
+            <span class="mono" style="font-size:11px;color:var(--gold)">Double Dispatch</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">
+            Run concrete visitors over the Classroom, Assignment, and Grade object hierarchy:
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-small" onclick="runVisitor('performance')">📈 Performance Visitor</button>
+            <button class="btn btn-ghost btn-small" onclick="runVisitor('risk')">⚠️ Risk Audit Visitor</button>
+            <button class="btn btn-ghost btn-small" onclick="runVisitor('report')">📜 Markdown Report Visitor</button>
+          </div>
+          <div id="visitor-output" style="font-size:12px"></div>
+        </div>
+
         <div class="feed-list" id="feed-list"></div>
       </div>
 
@@ -722,6 +738,53 @@ async function selectClassroom(id) {
   renderBroadcast();
   loadGradingPanel(id);
   loadAssignments(id);
+  loadVisitorPanel(id);
+}
+
+/* ---------------- visitor pattern: analytics engine ---------------- */
+function loadVisitorPanel(id) {
+  const panel = document.getElementById("visitor-panel");
+  if (!panel) return;
+  panel.classList.remove("hidden");
+  document.getElementById("visitor-output").innerHTML = `<div class="empty-note">Click a visitor button above to run Double Dispatch analytics over classroom elements.</div>`;
+}
+
+async function runVisitor(visitorType) {
+  const id = state.activeClassroomId;
+  if (!id) return;
+  const out = document.getElementById("visitor-output");
+  out.innerHTML = `<div style="font-size:12px;color:var(--text-dim)">Executing Double Dispatch (${visitorType} visitor)...</div>`;
+
+  try {
+    const res = await api(`/classroom/${id}/analytics/visitor?visitor_type=${visitorType}`);
+    let content = "";
+    if (visitorType === "performance") {
+      content = `
+        <div style="background:var(--bg-elev);padding:10px;border-radius:8px;border:1px solid var(--border)">
+          <div style="font-weight:600;color:var(--gold);margin-bottom:6px">📈 ${escapeHtml(res.visitor_type)} Results</div>
+          ${(res.metrics || []).map(m => `<div style="margin-bottom:4px;color:var(--text)">${escapeHtml(m)}</div>`).join('')}
+        </div>
+      `;
+    } else if (visitorType === "risk") {
+      content = `
+        <div style="background:var(--bg-elev);padding:10px;border-radius:8px;border:1px solid var(--border)">
+          <div style="font-weight:600;color:var(--red);margin-bottom:6px">⚠️ ${escapeHtml(res.visitor_type)} Results</div>
+          ${(res.risk_warnings || []).length ? (res.risk_warnings || []).map(w => `<div style="margin-bottom:4px;color:var(--red)">${escapeHtml(w)}</div>`).join('') : '<div style="color:var(--green)">✅ No academic risks or unsubmitted assignment warnings detected!</div>'}
+        </div>
+      `;
+    } else if (visitorType === "report") {
+      content = `
+        <div style="background:var(--bg-elev);padding:10px;border-radius:8px;border:1px solid var(--border)">
+          <div style="font-weight:600;color:var(--gold);margin-bottom:6px">📜 ${escapeHtml(res.visitor_type)} Generated Markdown</div>
+          <pre style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);white-space:pre-wrap;margin:0;background:var(--panel);padding:8px;border-radius:4px;border:1px solid var(--border-soft)">${escapeHtml(res.markdown_report)}</pre>
+        </div>
+      `;
+    }
+    out.innerHTML = content;
+    toast(`Executed ${res.visitor_type} via Double Dispatch!`);
+  } catch (e) {
+    out.innerHTML = `<div style="color:var(--red)">Failed to execute visitor: ${escapeHtml(e.message)}</div>`;
+  }
 }
 
 /* ---------------- state pattern: assignment lifecycle ---------------- */

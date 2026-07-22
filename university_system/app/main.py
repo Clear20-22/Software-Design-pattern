@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import get_database
-from app.routers import auth, classroom, notice, grading, assignment
+from app.routers import auth, classroom, notice, grading, assignment, analytics
 
 app = FastAPI(title="University Management System")
 
@@ -25,6 +25,7 @@ app.include_router(classroom.router)
 app.include_router(notice.router)
 app.include_router(grading.router)
 app.include_router(assignment.router)
+app.include_router(analytics.router)
 
 
 @app.on_event("startup")
